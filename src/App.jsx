@@ -1,31 +1,44 @@
 import React from 'react';
-import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from './store/slices/authSlice';
 import axios from './lib/axios';
 import { User, LogOut, LayoutDashboard } from 'lucide-react';
 
-import Home from './pages/Home';
-import Search from './pages/Search';
+// Pages
+import Home     from './pages/Home';
+import Search   from './pages/Search';
 import Register from './pages/Register';
+<<<<<<< HEAD
 import Login from './pages/Login';
 import ExpertDashboard from './pages/dashboards/ExpertDashboard';
 import GigDetails from './pages/GigDetails';
 import Support from './pages/Support';
 import Faq from './pages/Faq';
 import ClientDashboard from './pages/dashboards/ClientDashboard';
+=======
+import Login    from './pages/Login';
+>>>>>>> 2db6dc0e3b2602e73bc1baa0f9f44512887310aa
 
-// Helper to check role
-const hasRole = (user, role) => user?.roles?.some(r => r.name === role);
+// Expert dashboard layout + pages
+import ExpertLayout      from './components/expert/ExpertLayout';
+import OverviewPage      from './pages/dashboards/expert/OverviewPage';
+import MessagesPage      from './pages/dashboards/expert/messages/MessagesPage';
+import ConversationPage  from './pages/dashboards/expert/messages/ConversationPage';
+import ServicesPage      from './pages/dashboards/expert/services/ServicesPage';
+import ReviewsPage       from './pages/dashboards/expert/reviews/ReviewsPage';
+
+// ─── Helper ───────────────────────────────────────────────────────────────────
+const hasRole = (user, role) => user?.roles?.some((r) => r.name === role);
 
 // ─── Public layout (with nav header) ─────────────────────────────────────────
 function PublicLayout({ children }) {
-    const { isAuthenticated, user } = useSelector(state => state.auth);
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const handleLogout = async () => {
-        try { await axios.post('/logout'); } catch (err) { console.error(err); }
+        try { await axios.post('/logout'); } catch {}
         dispatch(logout());
         navigate('/login');
     };
@@ -38,7 +51,10 @@ function PublicLayout({ children }) {
                         Expert<span className="text-gray-900">Maroc</span>
                     </Link>
                     <nav className="flex items-center gap-6">
-                        <Link to="/search" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
+                        <Link
+                            to="/search"
+                            className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors"
+                        >
                             Trouver un expert
                         </Link>
                         <Link to="/faqs" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
@@ -50,10 +66,16 @@ function PublicLayout({ children }) {
 
                         {!isAuthenticated ? (
                             <>
-                                <Link to="/login" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
+                                <Link
+                                    to="/login"
+                                    className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors"
+                                >
                                     Connexion
                                 </Link>
-                                <Link to="/register" className="text-sm font-bold bg-blue-600 text-white px-5 py-2.5 rounded-full hover:bg-blue-700 transition-colors shadow-sm">
+                                <Link
+                                    to="/register"
+                                    className="text-sm font-bold bg-blue-600 text-white px-5 py-2.5 rounded-full hover:bg-blue-700 transition-colors shadow-sm"
+                                >
                                     S'inscrire
                                 </Link>
                             </>
@@ -84,7 +106,6 @@ function PublicLayout({ children }) {
                                 <button
                                     onClick={handleLogout}
                                     className="flex items-center gap-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors"
-                                    title="Se déconnecter"
                                 >
                                     <LogOut size={16} />
                                     Déconnexion
@@ -99,23 +120,16 @@ function PublicLayout({ children }) {
     );
 }
 
-// ─── Protected route for experts ──────────────────────────────────────────────
+// ─── Expert route guard ───────────────────────────────────────────────────────
 function ExpertRoute({ children }) {
-    const { isAuthenticated, user } = useSelector(state => state.auth);
-    const navigate = useNavigate();
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
 
-    React.useEffect(() => {
-        if (!isAuthenticated) {
-            navigate('/login');
-        } else if (!hasRole(user, 'expert')) {
-            navigate('/');
-        }
-    }, [isAuthenticated, user, navigate]);
-
-    if (!isAuthenticated || !hasRole(user, 'expert')) return null;
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    if (!hasRole(user, 'expert')) return <Navigate to="/" replace />;
     return children;
 }
 
+<<<<<<< HEAD
 function ClientRoute({ children }) {
     const { isAuthenticated, user } = useSelector(state => state.auth);
     const navigate = useNavigate();
@@ -148,7 +162,17 @@ function LoginPage() {
             }
         }
     }, [isAuthenticated, user, navigate]);
+=======
+// ─── Login page (redirect if already logged in) ───────────────────────────────
+function LoginPage() {
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
+>>>>>>> 2db6dc0e3b2602e73bc1baa0f9f44512887310aa
 
+    if (isAuthenticated) {
+        return hasRole(user, 'expert')
+            ? <Navigate to="/expert/dashboard" replace />
+            : <Navigate to="/" replace />;
+    }
     return <Login />;
 }
 
@@ -156,14 +180,15 @@ function LoginPage() {
 export default function App() {
     return (
         <Routes>
-            {/* Full-screen expert dashboard (no public header) */}
+            {/* ── Expert dashboard (nested routes, shared layout) ─────── */}
             <Route
                 path="/expert/dashboard"
                 element={
                     <ExpertRoute>
-                        <ExpertDashboard />
+                        <ExpertLayout />
                     </ExpertRoute>
                 }
+<<<<<<< HEAD
             />
             <Route
                 path="/client/dashboard"
@@ -181,8 +206,22 @@ export default function App() {
             <Route path="/support" element={<PublicLayout><Support /></PublicLayout>} />
             <Route path="/faqs" element={<PublicLayout><Faq /></PublicLayout>} />
             <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
+=======
+            >
+                <Route index            element={<OverviewPage />} />
+                <Route path="messages"  element={<MessagesPage />} />
+                <Route path="messages/:id" element={<ConversationPage />} />
+                <Route path="services"  element={<ServicesPage />} />
+                <Route path="reviews"   element={<ReviewsPage />} />
+            </Route>
+
+            {/* ── Public pages ────────────────────────────────────────── */}
+            <Route path="/"               element={<PublicLayout><Home /></PublicLayout>} />
+            <Route path="/search"         element={<PublicLayout><Search /></PublicLayout>} />
+            <Route path="/register"       element={<PublicLayout><Register /></PublicLayout>} />
+>>>>>>> 2db6dc0e3b2602e73bc1baa0f9f44512887310aa
             <Route path="/register-expert" element={<PublicLayout><Register /></PublicLayout>} />
-            <Route path="/login" element={<PublicLayout><LoginPage /></PublicLayout>} />
+            <Route path="/login"          element={<PublicLayout><LoginPage /></PublicLayout>} />
         </Routes>
     );
 }
