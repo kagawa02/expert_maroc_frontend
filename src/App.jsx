@@ -10,6 +10,10 @@ import Search from './pages/Search';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import ExpertDashboard from './pages/dashboards/ExpertDashboard';
+import GigDetails from './pages/GigDetails';
+import Support from './pages/Support';
+import Faq from './pages/Faq';
+import ClientDashboard from './pages/dashboards/ClientDashboard';
 
 // Helper to check role
 const hasRole = (user, role) => user?.roles?.some(r => r.name === role);
@@ -37,6 +41,12 @@ function PublicLayout({ children }) {
                         <Link to="/search" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
                             Trouver un expert
                         </Link>
+                        <Link to="/faqs" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
+                            FAQs
+                        </Link>
+                        <Link to="/support" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
+                            Support
+                        </Link>
 
                         {!isAuthenticated ? (
                             <>
@@ -52,6 +62,15 @@ function PublicLayout({ children }) {
                                 {hasRole(user, 'expert') && (
                                     <Link
                                         to="/expert/dashboard"
+                                        className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                                    >
+                                        <LayoutDashboard size={16} />
+                                        Dashboard
+                                    </Link>
+                                )}
+                                {hasRole(user, 'client') && (
+                                    <Link
+                                        to="/client/dashboard"
                                         className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
                                     >
                                         <LayoutDashboard size={16} />
@@ -97,6 +116,22 @@ function ExpertRoute({ children }) {
     return children;
 }
 
+function ClientRoute({ children }) {
+    const { isAuthenticated, user } = useSelector(state => state.auth);
+    const navigate = useNavigate();
+
+    React.useEffect(() => {
+        if (!isAuthenticated) {
+            navigate('/login');
+        } else if (!hasRole(user, 'client')) {
+            navigate('/');
+        }
+    }, [isAuthenticated, user, navigate]);
+
+    if (!isAuthenticated || !hasRole(user, 'client')) return null;
+    return children;
+}
+
 // ─── Auto-redirect after login ────────────────────────────────────────────────
 function LoginPage() {
     const { isAuthenticated, user } = useSelector(state => state.auth);
@@ -106,6 +141,8 @@ function LoginPage() {
         if (isAuthenticated) {
             if (hasRole(user, 'expert')) {
                 navigate('/expert/dashboard');
+            } else if (hasRole(user, 'client')) {
+                navigate('/client/dashboard');
             } else {
                 navigate('/');
             }
@@ -128,10 +165,21 @@ export default function App() {
                     </ExpertRoute>
                 }
             />
+            <Route
+                path="/client/dashboard"
+                element={
+                    <ClientRoute>
+                        <ClientDashboard />
+                    </ClientRoute>
+                }
+            />
 
             {/* Public pages with header */}
             <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
             <Route path="/search" element={<PublicLayout><Search /></PublicLayout>} />
+            <Route path="/gigs/:id" element={<PublicLayout><GigDetails /></PublicLayout>} />
+            <Route path="/support" element={<PublicLayout><Support /></PublicLayout>} />
+            <Route path="/faqs" element={<PublicLayout><Faq /></PublicLayout>} />
             <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
             <Route path="/register-expert" element={<PublicLayout><Register /></PublicLayout>} />
             <Route path="/login" element={<PublicLayout><LoginPage /></PublicLayout>} />

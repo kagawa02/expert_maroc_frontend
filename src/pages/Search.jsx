@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
 import axios from '../lib/axios';
-import { MapPin, Star, ShieldCheck, ChevronRight, HandCoins, Search as SearchIcon, MessageCircle } from 'lucide-react';
+import { MapPin, Star, ShieldCheck, HandCoins, MessageCircle } from 'lucide-react';
 import BookingModal from '../components/ui/BookingModal';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 export default function Search() {
@@ -12,7 +11,6 @@ export default function Search() {
     const [selectedCity, setSelectedCity] = useState('');
     const [loading, setLoading] = useState(true);
     
-    const { isAuthenticated } = useSelector(state => state.auth);
     const navigate = useNavigate();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,7 +67,11 @@ export default function Search() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {gigs.map(gig => (
-                            <div key={gig.id} className="group bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col">
+                            <article
+                                key={gig.id}
+                                onClick={() => navigate(`/gigs/${gig.id}`)}
+                                className="group bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col cursor-pointer focus-within:ring-2 focus-within:ring-blue-500"
+                            >
                                 {/* Top Banner / Price */}
                                 <div className="h-2 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
                                 <div className="p-6 flex-1 flex flex-col">
@@ -116,7 +118,8 @@ export default function Search() {
                                             <span className="leading-relaxed">Paiement <strong>sur place</strong> directement à l'artisan.</span>
                                         </div>
                                         <Button 
-                                            onClick={() => {
+                                            onClick={(event) => {
+                                                event.stopPropagation();
                                                 setSelectedGig(gig);
                                                 setIsModalOpen(true);
                                             }}
@@ -127,7 +130,7 @@ export default function Search() {
                                         </Button>
                                     </div>
                                 </div>
-                            </div>
+                            </article>
                         ))}
                     </div>
                 )}

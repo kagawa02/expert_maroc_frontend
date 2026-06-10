@@ -31,8 +31,11 @@ export default function Login() {
 
             // Role-based redirect
             const isExpert = user?.roles?.some(r => r.name === 'expert');
+            const isClient = user?.roles?.some(r => r.name === 'client');
             if (isExpert) {
                 navigate('/expert/dashboard');
+            } else if (isClient) {
+                navigate('/client/dashboard');
             } else {
                 navigate('/');
             }
