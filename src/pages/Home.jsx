@@ -291,6 +291,8 @@ export default function Home() {
                     <div className="flex justify-center gap-8 text-sm font-medium text-gray-500 mb-8">
                         <Link to="/" className="hover:text-blue-600">Accueil</Link>
                         <Link to="/search" className="hover:text-blue-600">Trouver un expert</Link>
+                        <Link to="/faqs" className="hover:text-blue-600">FAQs</Link>
+                        <Link to="/support" className="hover:text-blue-600">Support</Link>
                         <Link to="/login" className="hover:text-blue-600">Connexion</Link>
                         <Link to="/register-expert" className="hover:text-blue-600">Devenir expert</Link>
                     </div>

@@ -5,24 +5,24 @@ import { logout } from './store/slices/authSlice';
 import axios from './lib/axios';
 import { User, LogOut, LayoutDashboard } from 'lucide-react';
 
-// Pages
-import Home     from './pages/Home';
-import Search   from './pages/Search';
+import Home from './pages/Home';
+import Search from './pages/Search';
 import Register from './pages/Register';
-import Login    from './pages/Login';
+import Login from './pages/Login';
+import GigDetails from './pages/GigDetails';
+import Support from './pages/Support';
+import Faq from './pages/Faq';
+import ClientDashboard from './pages/dashboards/ClientDashboard';
 
-// Expert dashboard layout + pages
-import ExpertLayout      from './components/expert/ExpertLayout';
-import OverviewPage      from './pages/dashboards/expert/OverviewPage';
-import MessagesPage      from './pages/dashboards/expert/messages/MessagesPage';
-import ConversationPage  from './pages/dashboards/expert/messages/ConversationPage';
-import ServicesPage      from './pages/dashboards/expert/services/ServicesPage';
-import ReviewsPage       from './pages/dashboards/expert/reviews/ReviewsPage';
+import ExpertLayout from './components/expert/ExpertLayout';
+import OverviewPage from './pages/dashboards/expert/OverviewPage';
+import MessagesPage from './pages/dashboards/expert/messages/MessagesPage';
+import ConversationPage from './pages/dashboards/expert/messages/ConversationPage';
+import ServicesPage from './pages/dashboards/expert/services/ServicesPage';
+import ReviewsPage from './pages/dashboards/expert/reviews/ReviewsPage';
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
 const hasRole = (user, role) => user?.roles?.some((r) => r.name === role);
 
-// ─── Public layout (with nav header) ─────────────────────────────────────────
 function PublicLayout({ children }) {
     const { isAuthenticated, user } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
@@ -42,25 +42,22 @@ function PublicLayout({ children }) {
                         Expert<span className="text-gray-900">Maroc</span>
                     </Link>
                     <nav className="flex items-center gap-6">
-                        <Link
-                            to="/search"
-                            className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors"
-                        >
+                        <Link to="/search" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
                             Trouver un expert
+                        </Link>
+                        <Link to="/faqs" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
+                            FAQs
+                        </Link>
+                        <Link to="/support" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
+                            Support
                         </Link>
 
                         {!isAuthenticated ? (
                             <>
-                                <Link
-                                    to="/login"
-                                    className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors"
-                                >
+                                <Link to="/login" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
                                     Connexion
                                 </Link>
-                                <Link
-                                    to="/register"
-                                    className="text-sm font-bold bg-blue-600 text-white px-5 py-2.5 rounded-full hover:bg-blue-700 transition-colors shadow-sm"
-                                >
+                                <Link to="/register" className="text-sm font-bold bg-blue-600 text-white px-5 py-2.5 rounded-full hover:bg-blue-700 transition-colors shadow-sm">
                                     S'inscrire
                                 </Link>
                             </>
@@ -69,6 +66,15 @@ function PublicLayout({ children }) {
                                 {hasRole(user, 'expert') && (
                                     <Link
                                         to="/expert/dashboard"
+                                        className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                                    >
+                                        <LayoutDashboard size={16} />
+                                        Dashboard
+                                    </Link>
+                                )}
+                                {hasRole(user, 'client') && (
+                                    <Link
+                                        to="/client/dashboard"
                                         className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
                                     >
                                         <LayoutDashboard size={16} />
@@ -96,7 +102,6 @@ function PublicLayout({ children }) {
     );
 }
 
-// ─── Expert route guard ───────────────────────────────────────────────────────
 function ExpertRoute({ children }) {
     const { isAuthenticated, user } = useSelector((state) => state.auth);
 
@@ -105,23 +110,29 @@ function ExpertRoute({ children }) {
     return children;
 }
 
-// ─── Login page (redirect if already logged in) ───────────────────────────────
+function ClientRoute({ children }) {
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
+
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    if (!hasRole(user, 'client')) return <Navigate to="/" replace />;
+    return children;
+}
+
 function LoginPage() {
     const { isAuthenticated, user } = useSelector((state) => state.auth);
 
     if (isAuthenticated) {
-        return hasRole(user, 'expert')
-            ? <Navigate to="/expert/dashboard" replace />
-            : <Navigate to="/" replace />;
+        if (hasRole(user, 'expert')) return <Navigate to="/expert/dashboard" replace />;
+        if (hasRole(user, 'client')) return <Navigate to="/client/dashboard" replace />;
+        return <Navigate to="/" replace />;
     }
+
     return <Login />;
 }
 
-// ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
     return (
         <Routes>
-            {/* ── Expert dashboard (nested routes, shared layout) ─────── */}
             <Route
                 path="/expert/dashboard"
                 element={
@@ -130,19 +141,30 @@ export default function App() {
                     </ExpertRoute>
                 }
             >
-                <Route index            element={<OverviewPage />} />
-                <Route path="messages"  element={<MessagesPage />} />
+                <Route index element={<OverviewPage />} />
+                <Route path="messages" element={<MessagesPage />} />
                 <Route path="messages/:id" element={<ConversationPage />} />
-                <Route path="services"  element={<ServicesPage />} />
-                <Route path="reviews"   element={<ReviewsPage />} />
+                <Route path="services" element={<ServicesPage />} />
+                <Route path="reviews" element={<ReviewsPage />} />
             </Route>
 
-            {/* ── Public pages ────────────────────────────────────────── */}
-            <Route path="/"               element={<PublicLayout><Home /></PublicLayout>} />
-            <Route path="/search"         element={<PublicLayout><Search /></PublicLayout>} />
-            <Route path="/register"       element={<PublicLayout><Register /></PublicLayout>} />
+            <Route
+                path="/client/dashboard"
+                element={
+                    <ClientRoute>
+                        <ClientDashboard />
+                    </ClientRoute>
+                }
+            />
+
+            <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+            <Route path="/search" element={<PublicLayout><Search /></PublicLayout>} />
+            <Route path="/gigs/:id" element={<PublicLayout><GigDetails /></PublicLayout>} />
+            <Route path="/support" element={<PublicLayout><Support /></PublicLayout>} />
+            <Route path="/faqs" element={<PublicLayout><Faq /></PublicLayout>} />
+            <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
             <Route path="/register-expert" element={<PublicLayout><Register /></PublicLayout>} />
-            <Route path="/login"          element={<PublicLayout><LoginPage /></PublicLayout>} />
+            <Route path="/login" element={<PublicLayout><LoginPage /></PublicLayout>} />
         </Routes>
     );
 }
