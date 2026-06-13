@@ -8,6 +8,7 @@ import {
     Star,
     LogOut,
     X,
+    Bell,
 } from 'lucide-react';
 import { logout } from '../../store/slices/authSlice';
 import axios from '../../lib/axios';
@@ -50,6 +51,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             to: '/expert/dashboard/reviews',
             label: 'Avis clients',
             icon: <Star size={20} />,
+        },
+        {
+            to: '/expert/dashboard/notifications',
+            label: 'Notifications',
+            icon: <Bell size={20} />,
         },
     ];
 

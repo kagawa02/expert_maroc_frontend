@@ -13,6 +13,7 @@ import GigDetails from './pages/GigDetails';
 import Support from './pages/Support';
 import Faq from './pages/Faq';
 import ClientDashboard from './pages/dashboards/ClientDashboard';
+import AdminDashboard from './pages/dashboards/AdminDashboard';
 
 import ExpertLayout from './components/expert/ExpertLayout';
 import OverviewPage from './pages/dashboards/expert/OverviewPage';
@@ -20,6 +21,7 @@ import MessagesPage from './pages/dashboards/expert/messages/MessagesPage';
 import ConversationPage from './pages/dashboards/expert/messages/ConversationPage';
 import ServicesPage from './pages/dashboards/expert/services/ServicesPage';
 import ReviewsPage from './pages/dashboards/expert/reviews/ReviewsPage';
+import NotificationsPage from './pages/dashboards/expert/NotificationsPage';
 
 const hasRole = (user, role) => user?.roles?.some((r) => r.name === role);
 
@@ -63,6 +65,15 @@ function PublicLayout({ children }) {
                             </>
                         ) : (
                             <div className="flex items-center gap-4 border-l pl-4 border-gray-200">
+                                {hasRole(user, 'admin') && (
+                                    <Link
+                                        to="/admin/dashboard"
+                                        className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
+                                    >
+                                        <LayoutDashboard size={16} />
+                                        Dashboard Admin
+                                    </Link>
+                                )}
                                 {hasRole(user, 'expert') && (
                                     <Link
                                         to="/expert/dashboard"
@@ -102,6 +113,14 @@ function PublicLayout({ children }) {
     );
 }
 
+function AdminRoute({ children }) {
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
+
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    if (!hasRole(user, 'admin')) return <Navigate to="/" replace />;
+    return children;
+}
+
 function ExpertRoute({ children }) {
     const { isAuthenticated, user } = useSelector((state) => state.auth);
 
@@ -122,6 +141,7 @@ function LoginPage() {
     const { isAuthenticated, user } = useSelector((state) => state.auth);
 
     if (isAuthenticated) {
+        if (hasRole(user, 'admin')) return <Navigate to="/admin/dashboard" replace />;
         if (hasRole(user, 'expert')) return <Navigate to="/expert/dashboard" replace />;
         if (hasRole(user, 'client')) return <Navigate to="/client/dashboard" replace />;
         return <Navigate to="/" replace />;
@@ -131,8 +151,51 @@ function LoginPage() {
 }
 
 export default function App() {
+    const { isAuthenticated } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    React.useEffect(() => {
+        if (!isAuthenticated) return;
+
+        let timeoutId;
+        // Inactivity limit: 15 minutes (15 * 60 * 1000 ms)
+        const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
+
+        const logoutUser = async () => {
+            try { await axios.post('/logout'); } catch {}
+            dispatch(logout());
+            navigate('/login', { state: { error: 'Votre session a expiré pour cause d\'inactivité prolongée.' } });
+        };
+
+        const resetTimer = () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(logoutUser, INACTIVITY_TIMEOUT);
+        };
+
+        const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+        events.forEach(event => window.addEventListener(event, resetTimer));
+
+        // Initialize timer
+        resetTimer();
+
+        return () => {
+            clearTimeout(timeoutId);
+            events.forEach(event => window.removeEventListener(event, resetTimer));
+        };
+    }, [isAuthenticated, dispatch, navigate]);
+
     return (
         <Routes>
+            <Route
+                path="/admin/dashboard"
+                element={
+                    <AdminRoute>
+                        <AdminDashboard />
+                    </AdminRoute>
+                }
+            />
+
             <Route
                 path="/expert/dashboard"
                 element={
@@ -146,6 +209,7 @@ export default function App() {
                 <Route path="messages/:id" element={<ConversationPage />} />
                 <Route path="services" element={<ServicesPage />} />
                 <Route path="reviews" element={<ReviewsPage />} />
+                <Route path="notifications" element={<NotificationsPage />} />
             </Route>
 
             <Route
