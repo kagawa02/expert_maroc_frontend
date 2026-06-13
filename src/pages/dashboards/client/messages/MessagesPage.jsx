@@ -13,12 +13,11 @@ const FILTERS = [
 
 function MessageRow({ booking, onClick }) {
     const status = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending;
-    const client = booking.client;
+    const expert = booking.expert || booking.gig?.user;
     const gig = booking.gig;
     const lastMessage = booking.messages && booking.messages.length > 0 ? booking.messages[0] : null;
     const unread = booking.unread_count > 0;
     
-    // Fallback if no messages yet
     const displayMessage = lastMessage ? lastMessage.content : booking.notes;
     const displayTime = lastMessage 
         ? new Date(lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -33,7 +32,7 @@ function MessageRow({ booking, onClick }) {
         >
             <div className="relative shrink-0">
                 <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-base shadow-sm">
-                    {client?.name?.charAt(0).toUpperCase()}
+                    {expert?.name?.charAt(0).toUpperCase()}
                 </div>
                 {unread && (
                     <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] text-white font-bold">
@@ -45,7 +44,7 @@ function MessageRow({ booking, onClick }) {
                 <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                         <p className={`text-sm font-bold ${unread ? 'text-blue-900' : 'text-gray-900'}`}>
-                            {client?.name}
+                            {expert?.name || 'Expert'}
                         </p>
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${status.color}`}>
                             {status.icon} {status.label}
@@ -125,7 +124,7 @@ export default function MessagesPage() {
                             <MessageRow
                                 key={booking.id}
                                 booking={booking}
-                                onClick={() => navigate(`/expert/dashboard/messages/${booking.id}`, { state: { booking } })}
+                                onClick={() => navigate(`/client/dashboard/messages/${booking.id}`, { state: { booking } })}
                             />
                         ))}
                     </div>

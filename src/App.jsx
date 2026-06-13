@@ -12,9 +12,13 @@ import Login from './pages/Login';
 import GigDetails from './pages/GigDetails';
 import Support from './pages/Support';
 import Faq from './pages/Faq';
-import ClientDashboard from './pages/dashboards/ClientDashboard';
 import AdminDashboard from './pages/dashboards/AdminDashboard';
-
+import ClientLayout from './components/client/ClientLayout';
+import ClientReservationsPage from './pages/dashboards/client/ReservationsPage';
+import ClientProfilePage from './pages/dashboards/client/ProfilePage';
+import ClientMessagesPage from './pages/dashboards/client/messages/MessagesPage';
+import ClientConversationPage from './pages/dashboards/client/messages/ConversationPage';
+import ClientNotificationsPage from './pages/dashboards/client/NotificationsPage';
 import ExpertLayout from './components/expert/ExpertLayout';
 import OverviewPage from './pages/dashboards/expert/OverviewPage';
 import MessagesPage from './pages/dashboards/expert/messages/MessagesPage';
@@ -216,10 +220,16 @@ export default function App() {
                 path="/client/dashboard"
                 element={
                     <ClientRoute>
-                        <ClientDashboard />
+                        <ClientLayout />
                     </ClientRoute>
                 }
-            />
+            >
+                <Route index element={<ClientReservationsPage />} />
+                <Route path="profile" element={<ClientProfilePage />} />
+                <Route path="messages" element={<ClientMessagesPage />} />
+                <Route path="messages/:id" element={<ClientConversationPage />} />
+                <Route path="notifications" element={<ClientNotificationsPage />} />
+            </Route>
 
             <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
             <Route path="/search" element={<PublicLayout><Search /></PublicLayout>} />
