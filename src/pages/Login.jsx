@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from '../lib/axios';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/slices/authSlice';
@@ -7,9 +7,16 @@ import { LogIn, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (location.state?.error) {
+            setError(location.state.error);
+        }
+    }, [location]);
 
     const [formData, setFormData] = useState({
         email: '',
@@ -30,9 +37,12 @@ export default function Login() {
             dispatch(setCredentials({ user, token }));
 
             // Role-based redirect
+            const isAdmin = user?.roles?.some(r => r.name === 'admin');
             const isExpert = user?.roles?.some(r => r.name === 'expert');
             const isClient = user?.roles?.some(r => r.name === 'client');
-            if (isExpert) {
+            if (isAdmin) {
+                navigate('/admin/dashboard');
+            } else if (isExpert) {
                 navigate('/expert/dashboard');
             } else if (isClient) {
                 navigate('/client/dashboard');

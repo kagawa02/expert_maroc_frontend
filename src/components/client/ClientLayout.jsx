@@ -11,6 +11,7 @@ function Sidebar({ isOpen, setIsOpen, user, onLogout }) {
     const navItems = [
         { path: '/client/dashboard', label: 'Réservations', icon: <CalendarCheck size={20} /> },
         { path: '/client/dashboard/messages', label: 'Messages', icon: <MessageSquare size={20} /> },
+        { path: '/client/dashboard/notifications', label: 'Notifications', icon: <Bell size={20} /> },
         { path: '/client/dashboard/profile', label: 'Profil', icon: <User size={20} /> },
     ];
 
@@ -65,6 +66,7 @@ function Sidebar({ isOpen, setIsOpen, user, onLogout }) {
 const PAGE_TITLES = {
     '/client/dashboard': 'Réservations',
     '/client/dashboard/messages': 'Messages',
+    '/client/dashboard/notifications': 'Notifications',
     '/client/dashboard/profile': 'Profil',
 };
 
@@ -106,9 +108,9 @@ export default function ClientLayout() {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="relative p-2.5 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+                        <Link to="/client/dashboard/notifications" className="relative p-2.5 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
                             <Bell size={20} />
-                        </button>
+                        </Link>
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
                             {user?.name?.charAt(0) || 'C'}
                         </div>
