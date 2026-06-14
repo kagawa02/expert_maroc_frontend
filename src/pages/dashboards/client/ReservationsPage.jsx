@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { CalendarCheck, FileText, Loader2, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { CalendarCheck, FileText, Loader2, CheckCircle2, Clock, XCircle, Star } from 'lucide-react';
 import axios, { API_ORIGIN } from '../../../lib/axios';
+import ReviewModal from '../../../components/client/ReviewModal';
 
 const STATUS_CONFIG = {
     pending: { label: 'En attente', color: 'text-amber-600 bg-amber-50 border-amber-200', icon: <Clock size={13} /> },
@@ -14,7 +15,7 @@ function getStatus(status) {
     return STATUS_CONFIG[status] || STATUS_CONFIG.pending;
 }
 
-function ReservationCard({ booking }) {
+function ReservationCard({ booking, onReview }) {
     const status = getStatus(booking.status);
 
     return (
@@ -39,17 +40,28 @@ function ReservationCard({ booking }) {
                     <p className="font-semibold text-gray-800 mt-1">Sur place</p>
                 </div>
             </div>
-            {booking.verification_report_path && (
-                <a
-                    href={`${API_ORIGIN}/storage/${booking.verification_report_path}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 mt-5 text-sm font-bold text-blue-600 hover:text-blue-700"
-                >
-                    <FileText size={16} />
-                    Télécharger le rapport final
-                </a>
-            )}
+            <div className="flex items-center gap-4 mt-5">
+                {booking.verification_report_path && (
+                    <a
+                        href={`${API_ORIGIN}/storage/${booking.verification_report_path}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700"
+                    >
+                        <FileText size={16} />
+                        Télécharger le rapport final
+                    </a>
+                )}
+                {booking.status === 'completed' && !booking.review && (
+                    <button
+                        onClick={() => onReview(booking)}
+                        className="inline-flex items-center gap-2 text-sm font-bold text-amber-600 hover:text-amber-700"
+                    >
+                        <Star size={16} />
+                        Évaluer l'expert
+                    </button>
+                )}
+            </div>
         </div>
     );
 }
@@ -57,12 +69,17 @@ function ReservationCard({ booking }) {
 export default function ReservationsPage() {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [reviewBooking, setReviewBooking] = useState(null);
 
-    useEffect(() => {
+    const loadBookings = () => {
         axios.get('/bookings')
             .then(res => setBookings(res.data))
             .catch(console.error)
             .finally(() => setLoading(false));
+    };
+
+    useEffect(() => {
+        loadBookings();
     }, []);
 
     if (loading) {
@@ -80,8 +97,28 @@ export default function ReservationsPage() {
     }
 
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-            {bookings.map(booking => <ReservationCard key={booking.id} booking={booking} />)}
-        </div>
+        <>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                {bookings.map(booking => (
+                    <ReservationCard 
+                        key={booking.id} 
+                        booking={booking} 
+                        onReview={setReviewBooking} 
+                    />
+                ))}
+            </div>
+
+            {reviewBooking && (
+                <ReviewModal
+                    booking={reviewBooking}
+                    onClose={() => setReviewBooking(null)}
+                    onSuccess={() => {
+                        setReviewBooking(null);
+                        loadBookings(); // Refresh list to hide the button
+                        alert('Merci pour votre avis !');
+                    }}
+                />
+            )}
+        </>
     );
 }

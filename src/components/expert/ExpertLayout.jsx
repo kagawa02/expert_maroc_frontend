@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Bell, Menu } from 'lucide-react';
+import axios from '../../lib/axios';
 import Sidebar from './Sidebar';
-import { FAKE_MESSAGES } from '../../constants/expertDashboard';
 
 // Map route paths to page titles
 const PAGE_TITLES = {
@@ -22,9 +22,19 @@ function getTitle(pathname) {
 export default function ExpertLayout() {
     const { user } = useSelector((state) => state.auth);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
     const location = useLocation();
+    const navigate = useNavigate();
 
-    const unreadCount = FAKE_MESSAGES.filter((m) => m.unread).length;
+    useEffect(() => {
+        axios.get('/notifications')
+            .then(res => {
+                const count = res.data.filter(n => !n.read_at).length;
+                setUnreadCount(count);
+            })
+            .catch(console.error);
+    }, [location.pathname]); // Refresh on navigation
+
     const pageTitle = getTitle(location.pathname);
 
     return (
@@ -53,10 +63,13 @@ export default function ExpertLayout() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button className="relative p-2.5 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+                        <button 
+                            onClick={() => navigate('/expert/dashboard/notifications')}
+                            className="relative p-2.5 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                        >
                             <Bell size={20} />
                             {unreadCount > 0 && (
-                                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+                                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-gray-50 rounded-full" />
                             )}
                         </button>
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">

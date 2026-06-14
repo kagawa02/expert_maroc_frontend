@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { Bell, CalendarCheck, LogOut, Menu, MessageSquare, User, X } from 'lucide-react';
@@ -81,6 +81,16 @@ export default function ClientLayout() {
     const navigate = useNavigate();
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        axios.get('/notifications')
+            .then(res => {
+                const count = res.data.filter(n => !n.read_at).length;
+                setUnreadCount(count);
+            })
+            .catch(console.error);
+    }, [location.pathname]);
 
     const handleLogout = async () => {
         try { await axios.post('/logout'); } catch {}
@@ -110,6 +120,9 @@ export default function ClientLayout() {
                     <div className="flex items-center gap-3">
                         <Link to="/client/dashboard/notifications" className="relative p-2.5 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
                             <Bell size={20} />
+                            {unreadCount > 0 && (
+                                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-gray-50 rounded-full" />
+                            )}
                         </Link>
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
                             {user?.name?.charAt(0) || 'C'}

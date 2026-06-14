@@ -12,14 +12,11 @@ import {
 } from 'lucide-react';
 import { logout } from '../../store/slices/authSlice';
 import axios from '../../lib/axios';
-import { FAKE_MESSAGES } from '../../constants/expertDashboard';
 
 export default function Sidebar({ isOpen, setIsOpen }) {
     const { user } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-
-    const unreadCount = FAKE_MESSAGES.filter((m) => m.unread).length;
 
     const handleLogout = async () => {
         try {
@@ -40,7 +37,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             to: '/expert/dashboard/messages',
             label: 'Messages',
             icon: <MessageSquare size={20} />,
-            badge: unreadCount,
         },
         {
             to: '/expert/dashboard/services',

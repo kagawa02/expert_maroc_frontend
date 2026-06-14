@@ -5,6 +5,7 @@ import { ArrowLeft, Send, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { STATUS_CONFIG } from '../../../../constants/expertDashboard';
 import api from '../../../../lib/axios';
 import echo from '../../../../lib/echo';
+import ReviewModal from '../../../../components/client/ReviewModal';
 
 export default function ConversationPage() {
     const { id } = useParams();
@@ -16,6 +17,7 @@ export default function ConversationPage() {
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(!booking);
     const [sending, setSending] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
     const messagesEndRef = useRef(null);
 
     useEffect(() => {
@@ -115,6 +117,14 @@ export default function ConversationPage() {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
+                        {booking.status === 'completed' && !booking.review && (
+                            <button
+                                onClick={() => setShowReviewModal(true)}
+                                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
+                            >
+                                Évaluer l'expert
+                            </button>
+                        )}
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${status.color}`}>
                             {status.icon} {status.label}
                         </span>
@@ -207,6 +217,18 @@ export default function ConversationPage() {
                     </form>
                 </div>
             </div>
+
+            {showReviewModal && (
+                <ReviewModal
+                    booking={booking}
+                    onClose={() => setShowReviewModal(false)}
+                    onSuccess={() => {
+                        setShowReviewModal(false);
+                        setBooking({ ...booking, review: { rating: 5 } }); // Optimistic UI update
+                        alert('Merci pour votre avis !');
+                    }}
+                />
+            )}
         </div>
     );
 }

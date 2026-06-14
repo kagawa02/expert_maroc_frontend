@@ -245,6 +245,30 @@ export default function ConversationPage() {
                         </div>
                     </div>
                 )}
+                
+                {booking.status === 'accepted' && (
+                    <div className="p-6 flex-1 bg-white border-t border-gray-100 mt-auto shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+                        <h3 className="font-bold text-gray-900 mb-4">Actions</h3>
+                        <button
+                            onClick={() => updateStatus('in_progress')}
+                            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                        >
+                            <Loader2 size={16} /> Commencer le service
+                        </button>
+                    </div>
+                )}
+
+                {booking.status === 'in_progress' && (
+                    <div className="p-6 flex-1 bg-white border-t border-gray-100 mt-auto shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+                        <h3 className="font-bold text-gray-900 mb-4">Actions</h3>
+                        <button
+                            onClick={() => updateStatus('completed')}
+                            className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm transition-colors flex justify-center items-center gap-2"
+                        >
+                            <CheckCircle2 size={16} /> Marquer comme terminée
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
